@@ -44,14 +44,16 @@ inline class Point3d(private val v: Vec3d) {
 inline class Color(private val v: Vec3d) {
     constructor(x: Double, y: Double, z: Double) : this(Vec3d(x, y, z))
 
-    val translatedX
-        get() = (255.99 * v.x).toInt()
-    val translatedY
-        get() = (255.99 * v.y).toInt()
-    val translatedZ
-        get() = (255.99 * v.z).toInt()
+    companion object {
+        val ZERO = Color(0.0, 0.0, 0.0)
+    }
 
-    fun translatedString(): String = "$translatedX $translatedY $translatedZ"
+    fun ppmString(samplesPerPixel: Int): String {
+        val scale = 1.0 / samplesPerPixel
+        return "${scaleTo255(v.x * scale)} ${scaleTo255(v.y * scale)} ${scaleTo255(v.z * scale)}"
+    }
+
+    private fun scaleTo255(x: Double) = (256 * x.clamp(0.0, 0.990)).toInt()
 
     operator fun times(x: Double) = Color(v * x)
     operator fun plus(other: Color) = Color(v + other.v)

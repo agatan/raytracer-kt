@@ -6,6 +6,7 @@ package raytracer
 import me.tongfei.progressbar.ProgressBar
 import java.io.File
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 fun sphereHitTimestep(center: Point3d, radius: Double, ray: Ray): Double? {
     // t^2 * b * b + 2tb * (A - C) + (A - C) * (A - C) - r^2 = 0
@@ -39,6 +40,7 @@ fun main() {
     val aspectRatio = 16.0 / 9.0
     val imageWidth = 400
     val imageHeight = (imageWidth / aspectRatio).toInt()
+    val samplesPerPixel = 100
 
     // World
     val world = HittableList(
@@ -47,14 +49,7 @@ fun main() {
     )
 
     // Camera
-    val viewportHeight = 2.0
-    val viewportWidth = aspectRatio * viewportHeight
-    val focalLength = 1.0
-
-    val origin = Point3d(0.0, 0.0, 0.0)
-    val horizontal = Vec3d(viewportWidth, 0.0, 0.0)
-    val vertical = Vec3d(0.0, viewportHeight, 0.0)
-    val lowerLeftCorner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3d(0.0, 0.0, focalLength)
+    val camera = Camera()
 
     // Render
 
@@ -65,11 +60,13 @@ fun main() {
             for (j in (imageHeight - 1) downTo 0) {
                 bar.step()
                 for (i in 0 until imageWidth) {
-                    val u = i.toDouble() / (imageWidth - 1)
-                    val v = j.toDouble() / (imageHeight - 1)
-                    val r = Ray(origin, lowerLeftCorner + horizontal * u + vertical * v - origin)
-                    val pixelColor = rayColor(r, world)
-                    out.println(pixelColor.translatedString())
+                    val pixelColor = (0 until samplesPerPixel).fold(Color.ZERO) { acc, _ ->
+                        val u = (i.toDouble() + Random.nextDouble()) / (imageWidth - 1)
+                        val v = (j.toDouble() + Random.nextDouble()) / (imageHeight - 1)
+                        val r = camera.ray(u, v)
+                        acc + rayColor(r, world)
+                    }
+                    out.println(pixelColor.ppmString(samplesPerPixel))
                 }
             }
         }
