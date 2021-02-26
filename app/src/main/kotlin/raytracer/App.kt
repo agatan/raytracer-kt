@@ -5,19 +5,31 @@ package raytracer
 
 import me.tongfei.progressbar.ProgressBar
 import java.io.File
+import kotlin.math.sqrt
 
-fun hitSphere(center: Point3d, radius: Double, ray: Ray): Boolean {
+fun sphereHitTimestep(center: Point3d, radius: Double, ray: Ray): Double? {
+    // t^2 * b * b + 2tb * (A - C) + (A - C) * (A - C) - r^2 = 0
+    //   t: timestep
+    //   A: ray origin
+    //   b: ray direction
+    //   C: center of the sphere
+    //   r: radius of the sphere
     val oc = ray.origin - center
     val a = ray.direction.l2norm()
-    val b = 2.0 * oc.dot(ray.direction)
+    val halfB = oc.dot(ray.direction)
     val c = oc.l2norm() - radius * radius
-    val discriminant = b * b - 4 * a * c
-    return discriminant > 0
+    val discriminant = halfB * halfB - a * c
+    if (discriminant < 0) {
+        return null
+    }
+    return (-halfB - sqrt(discriminant)) / a
 }
 
 fun rayColor(ray: Ray): Color {
-    if (hitSphere(Point3d(0.0, 0.0, -1.0), 0.5, ray)) {
-        return Color(1.0, 0.0, 0.0)
+    val sphereCenter = Point3d(0.0, 0.0, -1.0)
+    sphereHitTimestep(sphereCenter, 0.5, ray)?.also { t ->
+        val n = (ray.at(t) - sphereCenter).unit()
+        return Color(n.x + 1, n.y + 1, n.z + 1) * 0.5
     }
     val unitDirection = ray.direction.unit()
     val t = 0.5 * (unitDirection.y + 1.0)
