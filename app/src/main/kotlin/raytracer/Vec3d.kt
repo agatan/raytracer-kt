@@ -1,6 +1,5 @@
 package raytracer
 
-import java.io.Writer
 import java.lang.IndexOutOfBoundsException
 import kotlin.math.sqrt
 
@@ -35,8 +34,15 @@ class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
     )
 }
 
-inline class Point3d(val v: Vec3d)
-inline class Color(val v: Vec3d) {
+inline class Point3d(private val v: Vec3d) {
+    constructor(x: Double, y: Double, z: Double): this(Vec3d(x, y, z))
+
+    operator fun plus(vec: Vec3d) = Point3d(v + vec)
+    operator fun minus(vec: Vec3d) = Point3d(v - vec)
+    operator fun minus(other: Point3d): Vec3d = v - other.v
+}
+
+inline class Color(private val v: Vec3d) {
     constructor(x: Double, y: Double, z: Double): this(Vec3d(x, y, z))
 
     val translatedX
@@ -46,4 +52,7 @@ inline class Color(val v: Vec3d) {
     val translatedZ
         get() =  (255.99 * v.z).toInt()
     fun translatedString(): String = "$translatedX $translatedY $translatedZ"
+
+    operator fun times(x: Double) = Color(v * x)
+    operator fun plus(other: Color) = Color(v + other.v)
 }

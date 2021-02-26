@@ -6,9 +6,28 @@ package raytracer
 import me.tongfei.progressbar.ProgressBar
 import java.io.File
 
+fun rayColor(ray: Ray): Color {
+    val unitDirection = ray.direction.unit()
+    val t = 0.5 * (unitDirection.y + 1.0)
+    return Color(1.0, 1.0, 1.0) * (1.0 - t) + Color(0.5, 0.7, 1.0) * t
+}
+
 fun main() {
-    val imageWidth = 256
-    val imageHeight = 256
+    val aspectRatio = 16.0 / 9.0
+    val imageWidth = 400
+    val imageHeight = (imageWidth / aspectRatio).toInt()
+
+    // Camera
+    val viewportHeight = 2.0
+    val viewportWidth = aspectRatio * viewportHeight
+    val focalLength = 1.0
+
+    val origin = Point3d(0.0, 0.0, 0.0)
+    val horizontal = Vec3d(viewportWidth, 0.0, 0.0)
+    val vertical = Vec3d(0.0, viewportHeight, 0.0)
+    val lowerLeftCorner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3d(0.0, 0.0, focalLength)
+
+    // Render
 
     File("image.ppm").printWriter().use { out ->
         out.print("P3\n$imageWidth $imageHeight\n255\n")
@@ -17,12 +36,11 @@ fun main() {
             for (j in (imageHeight - 1) downTo 0) {
                 bar.step()
                 for (i in 0..imageWidth) {
-                    val pixelColor = Color(
-                        i.toDouble() / (imageWidth - 1),
-                        j.toDouble() / (imageHeight - 1),
-                        0.25
-                    )
-                    out.println("${pixelColor.translatedString()}")
+                    val u = i.toDouble() / (imageWidth - 1)
+                    val v = j.toDouble() / (imageHeight - 1)
+                    val r = Ray(origin, lowerLeftCorner + horizontal * u + vertical * v - origin)
+                    val pixelColor = rayColor(r)
+                    out.println(pixelColor.translatedString())
                 }
             }
         }
