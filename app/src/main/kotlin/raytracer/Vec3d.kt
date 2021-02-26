@@ -1,5 +1,6 @@
 package raytracer
 
+import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -8,7 +9,7 @@ data class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) 
         private fun random(from: Double = 0.0, until: Double = 1.0) =
             Vec3d(Random.nextDouble(from, until), Random.nextDouble(from, until), Random.nextDouble(from, until))
 
-        private fun randomInUnitSphere(): Vec3d {
+        fun randomInUnitSphere(): Vec3d {
             while (true) {
                 val v = random(-1.0, 1.0)
                 if (v.l2norm() < 1) {
@@ -54,6 +55,16 @@ data class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) 
         z * other.x - x * other.z,
         x * other.y - y * other.x
     )
+
+    fun reflect(normal: Vec3d): Vec3d {
+        require((normal.l2norm() - 1).absoluteValue < 1e-8)
+        return this - normal * 2.0 * this.dot(normal)
+    }
+
+    fun isNearZero(): Boolean {
+        val s = 1e-8;
+        return x < s && y < s && z < s
+    }
 }
 
 inline class Point3d(private val v: Vec3d) {
@@ -80,5 +91,6 @@ inline class Color(private val v: Vec3d) {
     private fun scaleTo255(x: Double) = (256 * sqrt(x).clamp(0.0, 0.990)).toInt()
 
     operator fun times(x: Double) = Color(v * x)
+    operator fun times(other: Color) = Color(v * other.v)
     operator fun plus(other: Color) = Color(v + other.v)
 }

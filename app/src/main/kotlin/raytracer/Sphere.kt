@@ -2,9 +2,9 @@ package raytracer
 
 import kotlin.math.sqrt
 
-class Sphere(private val center: Point3d, private val radius: Double) : Hittable {
+class Sphere(private val center: Point3d, private val radius: Double, private val material: Material) : Hittable {
 
-    override fun hit(ray: Ray, timeMin: Double, timeMax: Double): HitRecord? {
+    override fun hit(ray: Ray, timeMin: Double, timeMax: Double): Hit? {
         // t^2 * b * b + 2tb * (A - C) + (A - C) * (A - C) - r^2 = 0
         //   t: timestep
         //   A: ray origin
@@ -30,6 +30,6 @@ class Sphere(private val center: Point3d, private val radius: Double) : Hittable
         }
         val p = ray.at(t)
 
-        return HitRecord.create(p, t, ray, (p - center) / radius)
+        return Hit.create(p, t, ray, (p - center) / radius, material)
     }
 }

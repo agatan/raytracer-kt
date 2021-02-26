@@ -5,26 +5,7 @@ package raytracer
 
 import me.tongfei.progressbar.ProgressBar
 import java.io.File
-import kotlin.math.sqrt
 import kotlin.random.Random
-
-fun sphereHitTimestep(center: Point3d, radius: Double, ray: Ray): Double? {
-    // t^2 * b * b + 2tb * (A - C) + (A - C) * (A - C) - r^2 = 0
-    //   t: timestep
-    //   A: ray origin
-    //   b: ray direction
-    //   C: center of the sphere
-    //   r: radius of the sphere
-    val oc = ray.origin - center
-    val a = ray.direction.l2norm()
-    val halfB = oc.dot(ray.direction)
-    val c = oc.l2norm() - radius * radius
-    val discriminant = halfB * halfB - a * c
-    if (discriminant < 0) {
-        return null
-    }
-    return (-halfB - sqrt(discriminant)) / a
-}
 
 fun rayColor(ray: Ray, world: Hittable, depth: Int): Color {
     if (depth <= 0) {
@@ -32,8 +13,11 @@ fun rayColor(ray: Ray, world: Hittable, depth: Int): Color {
     }
     val hit = world.hit(ray, Double.MIN_VALUE, Double.POSITIVE_INFINITY)
     if (hit != null) {
-        val target = hit.p + Vec3d.randomInHemisphere(hit.normal)
-        return rayColor(Ray(hit.p, target - hit.p), world, depth - 1) * 0.5
+        val scattered = hit.scatter(ray)
+        if (scattered != null) {
+            return scattered.attenuation * rayColor(scattered.ray, world, depth - 1)
+        }
+        return Color.ZERO
     }
     val unitDirection = ray.direction.unit()
     val t = 0.5 * (unitDirection.y + 1.0)
@@ -48,9 +32,15 @@ fun main() {
     val maxDepth = 50
 
     // World
+    val materialGround = Lambertian(Color(0.8, 0.8, 0.0))
+    val materialCenter = Lambertian(Color(0.7, 0.3, 0.3))
+    val materialLeft = Metal(Color(0.8, 0.8, 0.8))
+    val materialRight = Metal(Color(0.8, 0.6, 0.2))
     val world = HittableList(
-        Sphere(Point3d(0.0, 0.0, -1.0), 0.5),
-        Sphere(Point3d(0.0, -100.5, -1.0), 100.0),
+        Sphere(Point3d(0.0, -100.5, -1.0), 100.0, materialGround),
+        Sphere(Point3d(0.0, 0.0, -1.0), 0.5, materialCenter),
+        Sphere(Point3d(-1.0, 0.0, -1.0), 0.5, materialLeft),
+        Sphere(Point3d(1.0, 0.0, -1.0), 0.5, materialRight),
     )
 
     // Camera
