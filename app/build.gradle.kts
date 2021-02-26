@@ -44,6 +44,7 @@ application {
     // Define the main class for the application.
     mainClass.set("raytracer.AppKt")
 }
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
   freeCompilerArgs = listOf("-Xinline-classes")

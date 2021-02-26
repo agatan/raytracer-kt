@@ -6,7 +6,19 @@ package raytracer
 import me.tongfei.progressbar.ProgressBar
 import java.io.File
 
+fun hitSphere(center: Point3d, radius: Double, ray: Ray): Boolean {
+    val oc = ray.origin - center
+    val a = ray.direction.l2norm()
+    val b = 2.0 * oc.dot(ray.direction)
+    val c = oc.l2norm() - radius * radius
+    val discriminant = b * b - 4 * a * c
+    return discriminant > 0
+}
+
 fun rayColor(ray: Ray): Color {
+    if (hitSphere(Point3d(0.0, 0.0, -1.0), 0.5, ray)) {
+        return Color(1.0, 0.0, 0.0)
+    }
     val unitDirection = ray.direction.unit()
     val t = 0.5 * (unitDirection.y + 1.0)
     return Color(1.0, 1.0, 1.0) * (1.0 - t) + Color(0.5, 0.7, 1.0) * t
@@ -35,7 +47,7 @@ fun main() {
         ProgressBar("Scanlines", imageHeight.toLong()).use { bar ->
             for (j in (imageHeight - 1) downTo 0) {
                 bar.step()
-                for (i in 0..imageWidth) {
+                for (i in 0 until imageWidth) {
                     val u = i.toDouble() / (imageWidth - 1)
                     val v = j.toDouble() / (imageHeight - 1)
                     val r = Ray(origin, lowerLeftCorner + horizontal * u + vertical * v - origin)
