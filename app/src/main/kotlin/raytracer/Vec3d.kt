@@ -1,9 +1,8 @@
 package raytracer
 
-import java.lang.IndexOutOfBoundsException
 import kotlin.math.sqrt
 
-class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
+data class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
     operator fun unaryMinus() = Vec3d(-x, -y, -z)
 
     operator fun get(i: Int) = when (i) {
@@ -35,7 +34,7 @@ class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
 }
 
 inline class Point3d(private val v: Vec3d) {
-    constructor(x: Double, y: Double, z: Double): this(Vec3d(x, y, z))
+    constructor(x: Double, y: Double, z: Double) : this(Vec3d(x, y, z))
 
     operator fun plus(vec: Vec3d) = Point3d(v + vec)
     operator fun minus(vec: Vec3d) = Point3d(v - vec)
@@ -43,14 +42,15 @@ inline class Point3d(private val v: Vec3d) {
 }
 
 inline class Color(private val v: Vec3d) {
-    constructor(x: Double, y: Double, z: Double): this(Vec3d(x, y, z))
+    constructor(x: Double, y: Double, z: Double) : this(Vec3d(x, y, z))
 
     val translatedX
-        get() =  (255.99 * v.x).toInt()
+        get() = (255.99 * v.x).toInt()
     val translatedY
-        get() =  (255.99 * v.y).toInt()
+        get() = (255.99 * v.y).toInt()
     val translatedZ
-        get() =  (255.99 * v.z).toInt()
+        get() = (255.99 * v.z).toInt()
+
     fun translatedString(): String = "$translatedX $translatedY $translatedZ"
 
     operator fun times(x: Double) = Color(v * x)

@@ -25,11 +25,10 @@ fun sphereHitTimestep(center: Point3d, radius: Double, ray: Ray): Double? {
     return (-halfB - sqrt(discriminant)) / a
 }
 
-fun rayColor(ray: Ray): Color {
-    val sphereCenter = Point3d(0.0, 0.0, -1.0)
-    sphereHitTimestep(sphereCenter, 0.5, ray)?.also { t ->
-        val n = (ray.at(t) - sphereCenter).unit()
-        return Color(n.x + 1, n.y + 1, n.z + 1) * 0.5
+fun rayColor(ray: Ray, world: Hittable): Color {
+    val hit = world.hit(ray, 0.0, Double.POSITIVE_INFINITY)
+    if (hit != null) {
+        return (Color(hit.normal) + Color(1.0, 1.0, 1.0)) * 0.5
     }
     val unitDirection = ray.direction.unit()
     val t = 0.5 * (unitDirection.y + 1.0)
@@ -40,6 +39,12 @@ fun main() {
     val aspectRatio = 16.0 / 9.0
     val imageWidth = 400
     val imageHeight = (imageWidth / aspectRatio).toInt()
+
+    // World
+    val world = HittableList(
+        Sphere(Point3d(0.0, 0.0, -1.0), 0.5),
+        Sphere(Point3d(0.0, -100.5, -1.0), 100.0),
+    )
 
     // Camera
     val viewportHeight = 2.0
@@ -63,7 +68,7 @@ fun main() {
                     val u = i.toDouble() / (imageWidth - 1)
                     val v = j.toDouble() / (imageHeight - 1)
                     val r = Ray(origin, lowerLeftCorner + horizontal * u + vertical * v - origin)
-                    val pixelColor = rayColor(r)
+                    val pixelColor = rayColor(r, world)
                     out.println(pixelColor.translatedString())
                 }
             }
