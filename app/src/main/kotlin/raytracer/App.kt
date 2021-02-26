@@ -26,14 +26,18 @@ fun sphereHitTimestep(center: Point3d, radius: Double, ray: Ray): Double? {
     return (-halfB - sqrt(discriminant)) / a
 }
 
-fun rayColor(ray: Ray, world: Hittable): Color {
-    val hit = world.hit(ray, 0.0, Double.POSITIVE_INFINITY)
+fun rayColor(ray: Ray, world: Hittable, depth: Int): Color {
+    if (depth <= 0) {
+        return Color.ZERO
+    }
+    val hit = world.hit(ray, Double.MIN_VALUE, Double.POSITIVE_INFINITY)
     if (hit != null) {
-        return (Color(hit.normal) + Color(1.0, 1.0, 1.0)) * 0.5
+        val target = hit.p + Vec3d.randomInHemisphere(hit.normal)
+        return rayColor(Ray(hit.p, target - hit.p), world, depth - 1) * 0.5
     }
     val unitDirection = ray.direction.unit()
     val t = 0.5 * (unitDirection.y + 1.0)
-    return Color(1.0, 1.0, 1.0) * (1.0 - t) + Color(0.5, 0.7, 1.0) * t
+    return Color.ONE * (1.0 - t) + Color(0.5, 0.7, 1.0) * t
 }
 
 fun main() {
@@ -41,6 +45,7 @@ fun main() {
     val imageWidth = 400
     val imageHeight = (imageWidth / aspectRatio).toInt()
     val samplesPerPixel = 100
+    val maxDepth = 50
 
     // World
     val world = HittableList(
@@ -64,7 +69,7 @@ fun main() {
                         val u = (i.toDouble() + Random.nextDouble()) / (imageWidth - 1)
                         val v = (j.toDouble() + Random.nextDouble()) / (imageHeight - 1)
                         val r = camera.ray(u, v)
-                        acc + rayColor(r, world)
+                        acc + rayColor(r, world, maxDepth)
                     }
                     out.println(pixelColor.ppmString(samplesPerPixel))
                 }

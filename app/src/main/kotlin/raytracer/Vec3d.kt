@@ -1,8 +1,31 @@
 package raytracer
 
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 data class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) {
+    companion object {
+        private fun random(from: Double = 0.0, until: Double = 1.0) =
+            Vec3d(Random.nextDouble(from, until), Random.nextDouble(from, until), Random.nextDouble(from, until))
+
+        private fun randomInUnitSphere(): Vec3d {
+            while (true) {
+                val v = random(-1.0, 1.0)
+                if (v.l2norm() < 1) {
+                    return v
+                }
+            }
+        }
+
+        fun randomInHemisphere(normal: Vec3d) = randomInUnitSphere().let {
+            if (it.dot(normal) > 0.0) {
+                it
+            } else {
+                -it
+            }
+        }
+    }
+
     operator fun unaryMinus() = Vec3d(-x, -y, -z)
 
     operator fun get(i: Int) = when (i) {
@@ -46,6 +69,7 @@ inline class Color(private val v: Vec3d) {
 
     companion object {
         val ZERO = Color(0.0, 0.0, 0.0)
+        val ONE = Color(1.0, 1.0, 1.0)
     }
 
     fun ppmString(samplesPerPixel: Int): String {
@@ -53,7 +77,7 @@ inline class Color(private val v: Vec3d) {
         return "${scaleTo255(v.x * scale)} ${scaleTo255(v.y * scale)} ${scaleTo255(v.z * scale)}"
     }
 
-    private fun scaleTo255(x: Double) = (256 * x.clamp(0.0, 0.990)).toInt()
+    private fun scaleTo255(x: Double) = (256 * sqrt(x).clamp(0.0, 0.990)).toInt()
 
     operator fun times(x: Double) = Color(v * x)
     operator fun plus(other: Color) = Color(v + other.v)
