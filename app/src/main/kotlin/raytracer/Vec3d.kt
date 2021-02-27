@@ -1,6 +1,7 @@
 package raytracer
 
 import kotlin.math.absoluteValue
+import kotlin.math.min
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -59,6 +60,13 @@ data class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) 
     fun reflect(normal: Vec3d): Vec3d {
         require((normal.l2norm() - 1).absoluteValue < 1e-8)
         return this - normal * 2.0 * this.dot(normal)
+    }
+
+    fun refract(normal: Vec3d, etaiOverEtat: Double): Vec3d {
+        val cosTheta = min((-this).dot(normal), 1.0)
+        val rOutPerp = (this + normal * cosTheta) * etaiOverEtat
+        val rOutParallel = normal * (-sqrt((1.0 - rOutPerp.l2norm()).absoluteValue))
+        return rOutPerp + rOutParallel
     }
 
     fun isNearZero(): Boolean {

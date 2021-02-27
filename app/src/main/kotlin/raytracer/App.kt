@@ -33,13 +33,14 @@ fun main() {
 
     // World
     val materialGround = Lambertian(Color(0.8, 0.8, 0.0))
-    val materialCenter = Lambertian(Color(0.7, 0.3, 0.3))
-    val materialLeft = Metal(Color(0.8, 0.8, 0.8), 0.3)
+    val materialCenter = Lambertian(Color(0.1, 0.2, 0.5))
+    val materialLeft = Dielectric(1.5)
     val materialRight = Metal(Color(0.8, 0.6, 0.2), 1.0)
     val world = HittableList(
         Sphere(Point3d(0.0, -100.5, -1.0), 100.0, materialGround),
         Sphere(Point3d(0.0, 0.0, -1.0), 0.5, materialCenter),
         Sphere(Point3d(-1.0, 0.0, -1.0), 0.5, materialLeft),
+        Sphere(Point3d(-1.0, 0.0, -1.0), -0.4, materialLeft),
         Sphere(Point3d(1.0, 0.0, -1.0), 0.5, materialRight),
     )
 
