@@ -1,26 +1,37 @@
 package raytracer
 
-class Camera {
+import kotlin.math.tan
+
+class Camera(
+    lookFrom: Point3d,
+    lookAt: Point3d,
+    vup: Vec3d,
+    verticalFieldOfViewInDegrees: Double,
+    aspectRatio: Double
+) {
     private val origin: Point3d
     private val horizontal: Vec3d
     private val vertical: Vec3d
     private val lowerLeftCorner: Point3d
 
-    constructor() {
-        val aspectRatio = 16.0 / 9.0
-
-        val viewportHeight = 2.0
+    init {
+        val theta = degreesToRadians(verticalFieldOfViewInDegrees)
+        val h = tan(theta / 2.0)
+        val viewportHeight = 2.0 * h
         val viewportWidth = aspectRatio * viewportHeight
-        val focalLength = 1.0
 
-        this.origin = Point3d(0.0, 0.0, 0.0)
-        this.horizontal = Vec3d(viewportWidth, 0.0, 0.0)
-        this.vertical = Vec3d(0.0, viewportHeight, 0.0)
-        this.lowerLeftCorner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3d(0.0, 0.0, focalLength)
+        val w = (lookFrom - lookAt).unit()
+        val u = vup.cross(w).unit()
+        val v = w.cross(u)
+
+        this.origin = lookFrom
+        this.horizontal = u * viewportWidth
+        this.vertical = v * viewportHeight
+        this.lowerLeftCorner = origin - horizontal / 2.0 - vertical / 2.0 - w
     }
 
-    fun ray(u: Double, v: Double): Ray = Ray(
+    fun ray(s: Double, t: Double): Ray = Ray(
         origin,
-        lowerLeftCorner + horizontal * u + vertical * v - origin
+        lowerLeftCorner + horizontal * s + vertical * t - origin
     )
 }

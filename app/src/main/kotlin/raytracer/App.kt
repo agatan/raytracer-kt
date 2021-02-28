@@ -45,7 +45,13 @@ fun main() {
     )
 
     // Camera
-    val camera = Camera()
+    val camera = Camera(
+        Point3d(-2.0, 2.0, 1.0),
+        Point3d(0.0, 0.0, -1.0),
+        Vec3d(0.0, 1.0, 0.0),
+        20.0,
+        aspectRatio
+    )
 
     // Render
 
