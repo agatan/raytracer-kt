@@ -3,6 +3,9 @@
  */
 package raytracer
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import me.tongfei.progressbar.ProgressBar
 import java.io.File
 import kotlin.random.Random
@@ -81,17 +84,24 @@ fun main() {
     File("image.ppm").printWriter().use { out ->
         out.print("P3\n$imageWidth $imageHeight\n255\n")
 
-        ProgressBar("Scanlines", imageHeight.toLong()).use { bar ->
-            for (j in (imageHeight - 1) downTo 0) {
-                bar.step()
-                for (i in 0 until imageWidth) {
-                    val pixelColor = (0 until samplesPerPixel).fold(Color.ZERO) { acc, _ ->
-                        val u = (i.toDouble() + Random.nextDouble()) / (imageWidth - 1)
-                        val v = (j.toDouble() + Random.nextDouble()) / (imageHeight - 1)
-                        val r = camera.ray(u, v)
-                        acc + rayColor(r, world, maxDepth)
+        ProgressBar("Scanlines", (imageHeight * imageWidth).toLong()).use { bar ->
+            val pixels = (imageHeight - 1).downTo(0).flatMap { j ->
+                (0 until imageWidth).map { i -> Pair(j, i) }
+            }
+            runBlocking {
+                val pixelColors = pixels.map { (j, i) ->
+                    async(Dispatchers.Default) {
+                        (0 until samplesPerPixel).fold(Color.ZERO) { acc, _ ->
+                            val u = (i.toDouble() + Random.nextDouble()) / (imageWidth - 1)
+                            val v = (j.toDouble() + Random.nextDouble()) / (imageHeight - 1)
+                            val r = camera.ray(u, v)
+                            acc + rayColor(r, world, maxDepth)
+                        }
                     }
-                    out.println(pixelColor.ppmString(samplesPerPixel))
+                }
+                for (pixelColor in pixelColors) {
+                    bar.step()
+                    out.println(pixelColor.await().ppmString(samplesPerPixel))
                 }
             }
         }
