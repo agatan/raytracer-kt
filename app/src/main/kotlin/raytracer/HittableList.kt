@@ -1,6 +1,6 @@
 package raytracer
 
-class HittableList(private val objects: List<Hittable>) : Hittable {
+class HittableList(private val objects: Iterable<Hittable>) : Hittable {
     constructor(vararg objects: Hittable) : this(listOf(*objects))
 
     override fun hit(ray: Ray, timeMin: Double, timeMax: Double): Hit? {

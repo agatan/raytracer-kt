@@ -7,6 +7,34 @@ import me.tongfei.progressbar.ProgressBar
 import java.io.File
 import kotlin.random.Random
 
+fun randomMaterial(): Material {
+    val p = Random.nextDouble()
+    return when {
+        p < 0.8 -> Lambertian(Color.random() * Color.random())
+        p < 0.95 -> Metal(Color.random(0.5, 1.0), Random.nextDouble(0.0, 0.5))
+        else -> Dielectric(1.5)
+    }
+}
+
+fun randomScene(): Hittable {
+    val groundMaterial = Lambertian(Color(0.5, 0.5, 0.5))
+    val objects: List<Hittable> = mutableListOf<Hittable>().apply {
+        add(Sphere(Point3d(0.0, -1000.0, 0.0), 1000.0, groundMaterial))
+        add(Sphere(Point3d(0.0, 1.0, 0.0), 1.0, Dielectric(1.5)))
+        add(Sphere(Point3d(-4.0, 1.0, 0.0), 1.0, Lambertian(Color(0.4, 0.2, 0.1))))
+        add(Sphere(Point3d(4.0, 1.0, 0.0), 1.0, Metal(Color(0.7, 0.6, 0.5), 0.0)))
+        for (a in -11 until 11) {
+            for (b in -11 until 11) {
+                val center = Point3d(a + 0.9 * Random.nextDouble(), 0.2, b + 0.9 * Random.nextDouble())
+                val material = randomMaterial()
+                val hittable = Sphere(center, 0.2, material)
+                add(hittable)
+            }
+        }
+    }
+    return HittableList(objects)
+}
+
 fun rayColor(ray: Ray, world: Hittable, depth: Int): Color {
     if (depth <= 0) {
         return Color.ZERO
@@ -25,32 +53,22 @@ fun rayColor(ray: Ray, world: Hittable, depth: Int): Color {
 }
 
 fun main() {
-    val aspectRatio = 16.0 / 9.0
-    val imageWidth = 400
+    val aspectRatio = 3.0 / 2.0
+    val imageWidth = 200
     val imageHeight = (imageWidth / aspectRatio).toInt()
-    val samplesPerPixel = 100
+    val samplesPerPixel = 50
     val maxDepth = 50
 
     // World
-    val materialGround = Lambertian(Color(0.8, 0.8, 0.0))
-    val materialCenter = Lambertian(Color(0.1, 0.2, 0.5))
-    val materialLeft = Dielectric(1.5)
-    val materialRight = Metal(Color(0.8, 0.6, 0.2), 1.0)
-    val world = HittableList(
-        Sphere(Point3d(0.0, -100.5, -1.0), 100.0, materialGround),
-        Sphere(Point3d(0.0, 0.0, -1.0), 0.5, materialCenter),
-        Sphere(Point3d(-1.0, 0.0, -1.0), 0.5, materialLeft),
-        Sphere(Point3d(-1.0, 0.0, -1.0), -0.4, materialLeft),
-        Sphere(Point3d(1.0, 0.0, -1.0), 0.5, materialRight),
-    )
+    val world = randomScene()
 
     // Camera
-    val lookFrom = Point3d(3.0, 3.0, 2.0)
-    val lookAt = Point3d(0.0, 0.0, -1.0)
+    val lookFrom = Point3d(13.0, 2.0, 3.0)
+    val lookAt = Point3d(0.0, 0.0, 0.0)
     val vup = Vec3d(0.0, 1.0, 0.0)
     val verticalFieldOfViewInDegrees = 20.0
-    val aperture = 2.0
-    val distToFocus = (lookFrom - lookAt).length()
+    val aperture = 0.1
+    val distToFocus = 10.0
     val camera = Camera(
         lookFrom, lookAt, vup, verticalFieldOfViewInDegrees,
         aspectRatio,

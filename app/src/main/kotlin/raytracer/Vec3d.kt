@@ -98,6 +98,9 @@ inline class Color(private val v: Vec3d) {
     companion object {
         val ZERO = Color(0.0, 0.0, 0.0)
         val ONE = Color(1.0, 1.0, 1.0)
+
+        fun random(from: Double = 0.0, until: Double = 1.0): Color =
+            Color(Random.nextDouble(from, until), Random.nextDouble(from, until), Random.nextDouble(from, until))
     }
 
     fun ppmString(samplesPerPixel: Int): String {
