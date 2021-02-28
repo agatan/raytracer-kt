@@ -57,9 +57,9 @@ fun rayColor(ray: Ray, world: Hittable, depth: Int): Color {
 
 fun main() {
     val aspectRatio = 3.0 / 2.0
-    val imageWidth = 200
+    val imageWidth = 1200
     val imageHeight = (imageWidth / aspectRatio).toInt()
-    val samplesPerPixel = 50
+    val samplesPerPixel = 500
     val maxDepth = 50
 
     // World
