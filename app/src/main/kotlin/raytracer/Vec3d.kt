@@ -26,6 +26,15 @@ data class Vec3d(var x: Double = 0.0, var y: Double = 0.0, var z: Double = 0.0) 
                 -it
             }
         }
+
+        fun randomInUnitDisk(): Vec3d {
+            while (true) {
+                val p = Vec3d(Random.nextDouble(-1.0, 1.0), Random.nextDouble(-1.0, 1.0), 0.0)
+                if (p.l2norm() < 1) {
+                    return p
+                }
+            }
+        }
     }
 
     operator fun unaryMinus() = Vec3d(-x, -y, -z)

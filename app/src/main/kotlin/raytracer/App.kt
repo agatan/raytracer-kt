@@ -45,12 +45,17 @@ fun main() {
     )
 
     // Camera
+    val lookFrom = Point3d(3.0, 3.0, 2.0)
+    val lookAt = Point3d(0.0, 0.0, -1.0)
+    val vup = Vec3d(0.0, 1.0, 0.0)
+    val verticalFieldOfViewInDegrees = 20.0
+    val aperture = 2.0
+    val distToFocus = (lookFrom - lookAt).length()
     val camera = Camera(
-        Point3d(-2.0, 2.0, 1.0),
-        Point3d(0.0, 0.0, -1.0),
-        Vec3d(0.0, 1.0, 0.0),
-        20.0,
-        aspectRatio
+        lookFrom, lookAt, vup, verticalFieldOfViewInDegrees,
+        aspectRatio,
+        aperture,
+        distToFocus,
     )
 
     // Render
